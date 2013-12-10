@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.common.cache.R;
-import com.common.cache.lru.ImageManagerLru;
+import com.common.cache.lru.diy.SimpleImgLoaderLru;
 
 public class TestAdapter extends BaseAdapter {
 
@@ -53,7 +53,8 @@ public class TestAdapter extends BaseAdapter {
 		int w = vl.img.getWidth();
 		int h = vl.img.getHeight();
 		vl.text.setText(pb.getText());
-		ImageManagerLru.from(mContext).displayImage(vl.img, pb.getImgUrl(), R.drawable.ic_launcher, w, h);
+//		ImageManagerLru.from(mContext).displayImage(vl.img, pb.getImgUrl(), R.drawable.ic_launcher, w, h);
+		SimpleImgLoaderLru.from(mContext).displayImage(vl.img, pb.getImgUrl(), R.drawable.ic_launcher);
 		return convertView;
 	}
 
