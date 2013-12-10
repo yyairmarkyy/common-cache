@@ -11,12 +11,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 
+import android.R;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
@@ -25,6 +25,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.util.LruCache;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.common.cache.App;
@@ -82,7 +83,7 @@ public class ImageManagerLru {
 	 * 
 	 * @param context
 	 */
-	private ImageManagerLru(Context context) {
+	public ImageManagerLru(Context context) {
 		int memClass = ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE)).getMemoryClass();
 		memClass = memClass > 32 ? 32 : memClass;
 		// 使用可用内存的1/8作为图片缓存
@@ -171,7 +172,7 @@ public class ImageManagerLru {
 		// 读取map缓存
 		Bitmap bitmap = mMemoryCache.get(url);
 		if (bitmap != null) {
-			setImageBitmap(imageView, bitmap, false);
+			setImageBitmap(imageView, bitmap, true);
 			return;
 		} else {
 			imageView.setImageResource(resId);
@@ -245,7 +246,7 @@ public class ImageManagerLru {
 		// 读取map缓存
 		Bitmap bitmap = mMemoryCache.get(url + width + height);
 		if (bitmap != null) {
-			setImageBitmap(imageView, bitmap, false);
+			setImageBitmap(imageView, bitmap, true);
 			return;
 		}
 		// 生成文件名
@@ -339,12 +340,6 @@ public class ImageManagerLru {
 								opt.inPurgeable = true; // 可回收，占用内存
 								opt.inInputShareable = true;
 								opt.inPreferredConfig = Bitmap.Config.RGB_565;
-								// BitmapFactory.decodeByteArray(data, 0,
-								// data.length, opt);
-								// int bitmapSize = opt.outHeight * opt.outWidth
-								// * 4;
-								// if (bitmapSize > 1000 * 1200)
-								// opt.inSampleSize = 2;
 								opt.inJustDecodeBounds = false;
 								tBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opt);
 								if (imageRef.width != 0 && imageRef.height != 0) {
@@ -417,11 +412,7 @@ public class ImageManagerLru {
 						if (imageRef.isScaleWidth) {
 							d = DrawTool.scaleDrable2FitScreen(App.getApp(), d);
 						}
-						setImageDrable(imageRef.imageView, d, false);
-						// else {
-						// setImageBitmap(imageRef.imageView, bitmap,
-						// isFromNet);// 显示动画
-						// }
+						setImageDrable(imageRef.imageView, d, true);
 
 						isFromNet = false;
 					} while (false);
@@ -442,20 +433,32 @@ public class ImageManagerLru {
 	 */
 	private void setImageBitmap(ImageView imageView, Bitmap bitmap, boolean isTran) {
 		if (isTran) {
-			final TransitionDrawable td = new TransitionDrawable(new Drawable[] { new ColorDrawable(android.R.color.transparent),
-					new BitmapDrawable(bitmap) });
-			td.setCrossFadeEnabled(true);
-			imageView.setImageDrawable(td);
-			td.startTransition(300);
+//			final TransitionDrawable td = new TransitionDrawable(new Drawable[] { new BitmapDrawable(bitmap), new BitmapDrawable(bitmap) });
+//			td.setCrossFadeEnabled(true);
+//			imageView.setImageDrawable(td);
+//			td.startTransition(1000);
+//			LogUtil.i(App.tag, "图片动画ing");
+			imageView.setImageBitmap(bitmap);
+			imageView.startAnimation(AnimationUtils.loadAnimation(imageView.getContext(), com.common.cache.R.anim.fade_out));
 		} else {
 			imageView.setImageBitmap(bitmap);
 		}
-	
-		imageView.setImageBitmap(bitmap);
+
 	}
 
 	private void setImageDrable(ImageView imageView, Drawable drawable, boolean isTran) {
-		imageView.setImageDrawable(drawable);
+		if (isTran) {
+//			final TransitionDrawable td = new TransitionDrawable(new Drawable[] { drawable, drawable });
+//			td.setCrossFadeEnabled(true);
+//			imageView.setImageDrawable(td);
+//			td.startTransition(1000);
+//			LogUtil.i(App.tag, "图片动画ing");
+			imageView.setImageDrawable(drawable);
+			imageView.startAnimation(AnimationUtils.loadAnimation(imageView.getContext(), com.common.cache.R.anim.fade_out));
+		} else {
+			imageView.setImageDrawable(drawable);
+		}
+
 	}
 
 	/**
